@@ -1,8 +1,11 @@
 int add(const char* input)
 {
-  if(input is empty)
+  if(input == NULL || strlen(input) == 0
   {
     return 0;
   }
-  return -1;
+  return 0;
 }
+
+
+
