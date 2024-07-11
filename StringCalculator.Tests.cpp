@@ -14,7 +14,7 @@ TEST(StringCalculatorAddTests, ExpectZeroForSingleZero) {
     int result = add(input);
     ASSERT_EQ(result, expectedresult);
 }
-/*
+
 TEST(StringCalculatorAddTests, ExpectSumForTwoNumbers) {
     int expectedresult = 3;
     const char*  input = "1,2";
@@ -42,4 +42,4 @@ TEST(StringCalculatorAddTests, ExpectSumWithCustomDelimiter) {
     int result = add(input);
     ASSERT_EQ(result, expectedresult);
 }
-*/
+
