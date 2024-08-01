@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdexcept>
+
 int add_arr(int *arr,int cnt)
 {
     int i = 0;
