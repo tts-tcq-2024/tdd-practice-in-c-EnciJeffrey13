@@ -1,127 +1,115 @@
-// #include <string.h>
-// #include<stdlib.h>
-// // ExpectZeroForEmptyInput, ExpectZeroForSingleZero  
-// bool isemptystring(const char* value)
-// {
-//     if (value == NULL || value[0] == '\0')
-//     {
-//         return 1;
-//     }
-//     return 0;
-// }
+#ifndef STRING_CALCULATOR_H
+#define STRING_CALCULATOR_H
 
-// int islessthanthousand(const char *val)
-// {    
-//     int sum = 0;
-//     int input = atoi(val); // string to int
-//     if(input < 1000)
-//     {
-//         sum += input;
-//         return sum;
-//     }
-//     return 0;
-     
-// }
-
-// int calculatesum(const char* input, char* delimiter)
-// {
-//     int sum = 0;
-//     char* duplicate_input = NULL;
-//     duplicate_input = strdup (input); // duplicate the string 
-//     char* token = strtok(duplicate_input,delimiter); //tokenizing strings
-//     while(token != NULL)
-//     {
-//         sum = sum + islessthanthousand(token);
-//         token = strtok(NULL,delimiter);
-//     }
-//     return sum;
-// }
-
-// void append_custom_delimiter(const char* input, char* delimiter) {
-//     int i = 2; 
-//     while(input[i] != '\n')
-//     {
-//         char src[1] = {input[i]};
-//         strncat (delimiter, src,1);
-//         i = i+1;
-//     }
-// }
-// //ExpectSumWithCustomDelimiter("//;\n1;2")
-// void checkcustomdelimiter(const char* input, char* delimiter)
-// {
-//     if (input[0] == '/' && input[1] == '/')
-//     {
-//         strcpy(delimiter, "");
-//         append_custom_delimiter(input,delimiter);
-//     }
-//     else
-//     {
-//         delimiter = ",\n";
-//     }
-// }
-// //ExpectSumWithCustomDelimiter
-// int add (const char* input)
-// {
-//     char delimiter[128] = ",\n";
-//     if (1 == isemptystring(input))
-//     {
-//         return 0;
-//     }
-//     checkcustomdelimiter(input, delimiter);
-//     return calculatesum(input, delimiter);
-    
-// }
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <string.h>
 
-bool isemptystring(const char* value) {
-    return value == NULL || value[0] == '\0';
+// Function to parse a number from a token
+static int parseNumber(const char* token) {
+    return atoi(token);
 }
 
-int parse_number(const char* val) {
-    int num = atoi(val);
-    return (num < 1000) ? num : 0;
+// Function to check if a number should be ignored
+static int shouldIgnore(int num) {
+    return num > 1000;
 }
 
-int calculatesum(const char* input, const char* delimiter) {
+// Function to extract the delimiter from the input
+static char* getDelimiter(char** input) {
+    if (strncmp(*input, "//", 2) == 0) {
+        char* end = strchr(*input + 2, '\n');
+        if (end) {
+            *end = '\0';
+            return strndup(*input + 2, end - (*input + 2));
+        }
+    }
+    return strdup(","); // Default delimiter
+}
+
+// Function to handle a single token and update negatives
+static int handleToken(const char* token, char* negatives) {
+    int num = parseNumber(token);
+    if (num < 0) {
+        strcat(negatives, token);
+        strcat(negatives, ",");
+    }
+    return num;
+}
+
+// Function to sum numbers and accumulate negatives
+static int sumNumbers(char* str, const char* delimiter, char* negatives) {
     int sum = 0;
-    char* copy = strdup(input); 
-    char* token = strtok(copy, delimiter);
+    char* token = strtok(str, delimiter);
 
-    while (token != NULL) {
-        sum += parse_number(token);
+    while (token) {
+        int num = handleToken(token, negatives);
+        if (!shouldIgnore(num)) {
+            sum += num;
+        }
         token = strtok(NULL, delimiter);
     }
-
-    free(copy);
     return sum;
 }
 
-void extract_custom_delimiter(const char* input, char* delimiter) {
-    int i = 2;
-    while (input[i] != '\n' && input[i] != '\0') {
-        delimiter[i - 2] = input[i];
-        i++;
+// Function to process input lines and calculate the total sum
+static int processInput(char* str, const char* delimiter, char* negatives) {
+    int sum = 0;
+    char* line = strtok(str, "\n");
+
+    while (line) {
+        sum += sumNumbers(line, delimiter, negatives);
+        line = strtok(NULL, "\n");
     }
-    delimiter[i - 2] = '\0';
+
+    return sum;
 }
 
-void checkcustomdelimiter(const char* input, char* delimiter) {
-    if (input[0] == '/' && input[1] == '/') {
-        extract_custom_delimiter(input, delimiter);
-    } else {
-        strcpy(delimiter, ",\n");
+// Function to validate input
+static int isInputValid(const char* input) {
+    return input && strlen(input) > 0;
+}
+
+// Function to replace newlines with the delimiter
+static void replaceNewlinesWithDelimiter(char* str, const char* delimiter) {
+    for (char* p = str; *p; ++p) {
+        if (*p == '\n') {
+            *p = *delimiter;
+        }
     }
 }
 
-int add(const char* input) {
-    char delimiter[128] = ",\n";
-    if (isemptystring(input)) {
+// Function to check for negatives and handle errors
+static void checkForNegatives(char* negatives) {
+    if (strlen(negatives) > 0) {
+        negatives[strlen(negatives) - 1] = '\0'; // Remove trailing comma
+        fprintf(stderr, "negatives not allowed: %s\n", negatives);
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+
+// Main add function to calculate the sum
+static int add(const char* input) {
+    if (!isInputValid(input)) {
         return 0;
     }
 
-    checkcustomdelimiter(input, delimiter);
-    const char* numbers_start = (input[0] == '/' && input[1] == '/') ? strchr(input, '\n') + 1 : input;
-    return calculatesum(numbers_start, delimiter);
+    char* str = strdup(input);
+    char* input_copy = strdup(input);
+    char* delimiter = getDelimiter(&input_copy);
+    char negatives[100] = "";
+
+    replaceNewlinesWithDelimiter(str, delimiter);
+    int sum = processInput(str, delimiter, negatives);
+    checkForNegatives(negatives);
+
+    free(delimiter);
+    free(str);
+    free(input_copy);
+
+    return sum;
 }
+
+#endif // STRING_CALCULATOR_H
