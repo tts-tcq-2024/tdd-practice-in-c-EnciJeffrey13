@@ -13,7 +13,7 @@ void extract_custom_delimiter(const char* input, char* delimiter) {
     strncpy(delimiter, start, length); // Copy the delimiter
     delimiter[length] = '\0'; // Null-terminate the delimiter
 }
- 
+
 void split_numbers(const char* input, const char* delimiters, int* numbers, int* count) {
     char* copy = strdup(input);
     char* token = strtok(copy, delimiters);
