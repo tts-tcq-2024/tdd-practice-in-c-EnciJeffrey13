@@ -1,47 +1,127 @@
 #include <gtest/gtest.h>
-#include "StringCalculator.h"
-
-TEST(StringCalculatorTest, ReturnsZeroForEmptyString) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add(""), 0);
+extern "C" {
+    #include "StringCalculator.h"
 }
-
-TEST(StringCalculatorTest, ReturnsSumForSingleNumber) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add("1"), 1);
+ 
+TEST(StringCalculatorAddTests, ExpectZeroForEmptyInput) {
+    int expected_result = 0;
+    const char* input = "";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
 }
-
-TEST(StringCalculatorTest, ReturnsSumForTwoNumbers) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add("1,2"), 3);
+ 
+TEST(StringCalculatorAddTests, ExpectZeroForSingleZero) {
+    int expected_result = 0;
+    const char* input = "0";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
 }
-
-TEST(StringCalculatorTest, HandlesNewLineAsDelimiter) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add("1\n2,3"), 6);
+ 
+TEST(StringCalculatorAddTests, ExpectSumForTwoNumbers) {
+    int expected_result = 3;
+    const char* input = "1,2";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
 }
-
-TEST(StringCalculatorTest, SupportsCustomDelimiter) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add("//;\n1;2"), 3);
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithNewlineDelimiter) {
+    int expected_result = 6;
+    const char* input = "1\n2,3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
 }
-
-TEST(StringCalculatorTest, ThrowsExceptionForNegativeNumbers) {
-    StringCalculator calculator;
-    EXPECT_THROW(calculator.Add("1,-2,-3"), std::runtime_error);
+ 
+TEST(StringCalculatorAddTests, IgnoreNumbersGreaterThan1000) {
+    int expected_result = 1;
+    const char* input = "1,1001";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
 }
-
-TEST(StringCalculatorTest, IgnoresNumbersGreaterThan1000) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add("2,1001"), 2);
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithCustomDelimiter) {
+    int expected_result = 3;
+    const char* input = "//;\n1;2";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
 }
-
-TEST(StringCalculatorTest, SupportsCustomDelimiterWithAnyLength) {
-    StringCalculator calculator;
-    EXPECT_EQ(calculator.Add("//[***]\n1***2***3"), 6);
+ 
+TEST(StringCalculatorAddTests, ExpectExceptionForNegativeNumbers) {
+    const char* input = "1,-3,-4";
+    ASSERT_EXIT(add(input), ::testing::ExitedWithCode(EXIT_FAILURE), "negatives not allowed: -3 -4 ");
 }
-
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithEmptyString) {
+    int expected_result = 0;
+    const char* input = "";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithSingleNumber) {
+    int expected_result = 5;
+    const char* input = "5";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithMixedDelimiters) {
+    int expected_result = 6;
+    const char* input = "1\n2,3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithCustomDelimiterAtStart) {
+    int expected_result = 0;
+    const char* input = "/2";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithMultipleCustomDelimiters) {
+    int expected_result = 6;
+    const char* input = "//[;][#]\n1;2#3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithCustomDelimiterOfMoreThanOneCharacter) {
+    int expected_result = 6;
+    const char* input = "//[***]\n1***2***3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithEmptyLinesBetweenNumbers) {
+    int expected_result = 6;
+    const char* input = "1\n\n2,3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithCustomDelimiterContainingSpecialCharacters) {
+    int expected_result = 6;
+    const char* input = "//[.]\n1.2.3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectZeroWithEmptyCustomDelimiterLine) {
+    int expected_result = 0;
+    const char* input = "//\n";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
+TEST(StringCalculatorAddTests, ExpectSumWithCustomDelimiterSameAsDefaultDelimiter) {
+    int expected_result = 6;
+    const char* input = "//,\n1,2,3";
+    int result = add(input);
+    ASSERT_EQ(result, expected_result);
+}
+ 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+has context menu
