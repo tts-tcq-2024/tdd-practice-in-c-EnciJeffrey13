@@ -1,78 +1,73 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
- 
-bool has_custom_delimiter(const char* input) {
-    return input[0] == '/' && input[1] == '/';
-}
- 
-void extract_custom_delimiter(const char* input, char* delimiter) {
-    const char* start = input + 2; // Skip over "//"
-    size_t length = strcspn(start, "\n"); // Find the position of the newline character
-    strncpy(delimiter, start, length); // Copy the delimiter
-    delimiter[length] = '\0'; // Null-terminate the delimiter
+#include<stdlib.h>
+// ExpectZeroForEmptyInput, ExpectZeroForSingleZero  
+bool isemptystring(const char* value)
+{
+    if (value == NULL || value[0] == '\0')
+    {
+        return 1;
+    }
+    return 0;
 }
 
-void split_numbers(const char* input, const char* delimiters, int* numbers, int* count) {
-    char* copy = strdup(input);
-    char* token = strtok(copy, delimiters);
-    while (token) {
-        numbers[(*count)++] = atoi(token);
-        token = strtok(NULL, delimiters);
-    }
-    free(copy);
-}
- 
-bool check_negatives(int* numbers, int count, char* message) {
-    bool has_negatives = false;
-    strcpy(message, "negatives not allowed: ");
-    for (int i = 0; i < count; i++) {
-        if (numbers[i] < 0) {
-            has_negatives = true;
-            char num_str[12];
-            snprintf(num_str, sizeof(num_str), "%d ", numbers[i]);
-            strcat(message, num_str);
-        }
-    }
-    return has_negatives;
-}
- 
-int calculate_sum(int* numbers, int count) {
+int islessthanthousand(const char *val)
+{    
     int sum = 0;
-    for (int i = 0; i < count; i++) {
-        if (numbers[i] <= 1000) {
-            sum += numbers[i];
-        }
+    int input = atoi(val); // string to int
+    if(input < 1000)
+    {
+        sum += input;
+        return sum;
+    }
+    return 0;
+     
+}
+
+int calculatesum(const char* input, char* delimiter)
+{
+    int sum = 0;
+    char* duplicate_input = NULL;
+    duplicate_input = strdup (input); // duplicate the string 
+    char* token = strtok(duplicate_input,delimiter); //tokenizing strings
+    while(token != NULL)
+    {
+        sum = sum + islessthanthousand(token);
+        token = strtok(NULL,delimiter);
     }
     return sum;
 }
- 
-int parse_and_calculate(const char* input, const char* delimiters) {
-    int numbers[1000];
-    int count = 0;
-    split_numbers(input, delimiters, numbers, &count);
- 
-    char message[256];
-    if (check_negatives(numbers, count, message)) {
-        fprintf(stderr, "%s\n", message);
-        exit(EXIT_FAILURE);
+
+void append_custom_delimiter(const char* input, char* delimiter) {
+    int i = 2; 
+    while(input[i] != '\n')
+    {
+        char src[1] = {input[i]};
+        strncat (delimiter, src,1);
+        i = i+1;
     }
- 
-    return calculate_sum(numbers, count);
 }
- 
-int add(const char* input) {
-    if (*input == '\0') {
+//ExpectSumWithCustomDelimiter("//;\n1;2")
+void checkcustomdelimiter(const char* input, char* delimiter)
+{
+    if (input[0] == '/' && input[1] == '/')
+    {
+        strcpy(delimiter, "");
+        append_custom_delimiter(input,delimiter);
+    }
+    else
+    {
+        delimiter = ",\n";
+    }
+}
+//ExpectSumWithCustomDelimiter
+int add (const char* input)
+{
+    char delimiter[128] = ",\n";
+    if (1 == isemptystring(input))
+    {
         return 0;
     }
- 
-    char delimiter[100] = ",\n";
-    const char* numbers_start = input;
-    if (has_custom_delimiter(input)) {
-        extract_custom_delimiter(input, delimiter);
-        numbers_start = strchr(input, '\n') + 1; // Move past the delimiter line
-    }
- 
-    return parse_and_calculate(numbers_start, delimiter);
+    checkcustomdelimiter(input, delimiter);
+    return calculatesum(input, delimiter);
+    
 }
